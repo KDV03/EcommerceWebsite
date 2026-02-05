@@ -1167,7 +1167,7 @@ body {
         text-decoration: underline;
     }
 
-/* Auth page responsive */
+/* Auth page responsives */
 @media (max-width: 1024px) {
     .auth-container {
         grid-template-columns: 1fr;
