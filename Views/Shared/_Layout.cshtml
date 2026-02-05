@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TechMart</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a asp-controller="Home" asp-action="Index" class="logo">
+                        <span class="logo-icon">🛒</span>
+                        <span class="logo-text">TechMart</span>
+                    </a>
+                </div>
+                
+                <div class="navbar-search">
+                    <form asp-controller="Product" asp-action="Search" method="get" class="search-form">
+                        <input type="text" name="term" placeholder="Search products..." class="search-input" />
+                        <button type="submit" class="search-button">
+                            <span>🔍</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="navbar-menu">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link">Home</a>
+                    <a asp-controller="Product" asp-action="Index" class="nav-link">Products</a>
+                    <a asp-controller="Home" asp-action="About" class="nav-link">About</a>
+                    <a asp-controller="Home" asp-action="Contact" class="nav-link">Contact</a>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="nav-user-menu">
+                            <span class="nav-username">Hello, @User.Identity.Name</span>
+                            <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-secondary btn-small">Logout</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-secondary btn-small">Login</a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-small">Register</a>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>About TechMart</h3>
+                    <p>Your premier destination for quality products across electronics, fashion, books, and more.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a asp-controller="Home" asp-action="About">About Us</a></li>
+                        <li><a asp-controller="Home" asp-action="Contact">Contact</a></li>
+                        <li><a asp-controller="Product" asp-action="Index">Browse Products</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Customer Service</h3>
+                    <ul>
+                        <li><a href="#">Shipping Information</a></li>
+                        <li><a href="#">Returns Policy</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="#" title="Facebook">📘</a>
+                        <a href="#" title="Twitter">🐦</a>
+                        <a href="#" title="Instagram">📷</a>
+                        <a href="#" title="LinkedIn">💼</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; @DateTime.Now.Year TechMart. All rights reserved. Built with ASP.NET Core MVC</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

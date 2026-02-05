@@ -1,0 +1,146 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Create Your Account</h1>
+                    <p>Join TechMart today and start shopping</p>
+                </div>
+
+                <form asp-action="Register" asp-controller="Account" method="post" class="auth-form">
+                    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="FirstName"></label>
+                            <input asp-for="FirstName" class="form-input" placeholder="John" autofocus />
+                            <span asp-validation-for="FirstName" class="validation-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="LastName"></label>
+                            <input asp-for="LastName" class="form-input" placeholder="Doe" />
+                            <span asp-validation-for="LastName" class="validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" class="form-input" placeholder="john.doe@example.com" />
+                        <span asp-validation-for="Email" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="PhoneNumber"></label>
+                        <input asp-for="PhoneNumber" class="form-input" placeholder="+27 12 345 6789" />
+                        <span asp-validation-for="PhoneNumber" class="validation-error"></span>
+                        <small class="form-hint">Optional - used for order notifications</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="DateOfBirth"></label>
+                        <input asp-for="DateOfBirth" class="form-input" />
+                        <span asp-validation-for="DateOfBirth" class="validation-error"></span>
+                        <small class="form-hint">Optional - must be 18+ to register</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Password"></label>
+                        <input asp-for="Password" class="form-input" placeholder="Min. 8 characters" />
+                        <span asp-validation-for="Password" class="validation-error"></span>
+                        <small class="form-hint">Must include uppercase, lowercase, number, and special character</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ConfirmPassword"></label>
+                        <input asp-for="ConfirmPassword" class="form-input" />
+                        <span asp-validation-for="ConfirmPassword" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-group-checkbox">
+                        <label class="checkbox-label">
+                            <input asp-for="RegisterAsSeller" type="checkbox" class="form-checkbox" />
+                            <span>Register as a Seller</span>
+                        </label>
+                        <small class="form-hint">Check this if you want to sell products on TechMart</small>
+                        <span asp-validation-for="RegisterAsSeller" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-group-checkbox">
+                        <label class="checkbox-label">
+                            <input asp-for="AgreeToTerms" type="checkbox" class="form-checkbox" required />
+                            <span>I agree to the <a href="#" target="_blank">Terms and Conditions</a> and <a href="#" target="_blank">Privacy Policy</a></span>
+                        </label>
+                        <span asp-validation-for="AgreeToTerms" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-large btn-full">
+                            Create Account
+                        </button>
+                    </div>
+
+                    <div class="auth-footer">
+                        <p>Already have an account? <a asp-action="Login" asp-controller="Account">Sign in here</a></p>
+                    </div>
+                </form>
+
+                <div class="auth-divider">
+                    <span>OR</span>
+                </div>
+
+                <div class="social-auth">
+                    <button class="btn-social btn-google" disabled>
+                        <span>🔍</span> Continue with Google (Coming Soon)
+                    </button>
+                    <button class="btn-social btn-facebook" disabled>
+                        <span>📘</span> Continue with Facebook (Coming Soon)
+                    </button>
+                </div>
+            </div>
+
+            <div class="auth-benefits">
+                <h3>Why Join TechMart?</h3>
+                <ul class="benefits-list">
+                    <li>
+                        <span class="benefit-icon">🛍️</span>
+                        <div>
+                            <strong>Shop Thousands of Products</strong>
+                            <p>Access our vast marketplace with verified sellers</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="benefit-icon">🔒</span>
+                        <div>
+                            <strong>Secure Transactions</strong>
+                            <p>Your payments are protected with escrow</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="benefit-icon">💰</span>
+                        <div>
+                            <strong>Sell Your Products</strong>
+                            <p>Turn your items into cash easily</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="benefit-icon">📦</span>
+                        <div>
+                            <strong>Track Orders</strong>
+                            <p>Real-time updates on your purchases</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

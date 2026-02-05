@@ -1,0 +1,25 @@
+## Visual Studio
+.vs/
+*.user
+*.suo
+
+## Build outputs
+bin/
+obj/
+
+## ASP.NET
+appsettings.Development.json
+
+## EF Core
+*.db
+*.db-shm
+*.db-wal
+
+## OS junk
+.DS_Store
+Thumbs.db
+
+## Copilot / tooling
+CopilotIndi*
+FileContentIndex*
+DesignTimeBuild*

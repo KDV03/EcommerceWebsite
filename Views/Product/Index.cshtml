@@ -1,0 +1,175 @@
+@model ProductListViewModel
+@{
+    ViewData["Title"] = "Products";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>Browse Products</h1>
+        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+        {
+            <p class="search-results-info">Showing results for: <strong>@Model.SearchTerm</strong></p>
+        }
+        else if (Model.SelectedCategoryId.HasValue)
+        {
+            var selectedCategory = Model.Categories.FirstOrDefault(c => c.CategoryId == Model.SelectedCategoryId.Value);
+            @if (selectedCategory != null)
+            {
+                <p class="search-results-info">Category: <strong>@selectedCategory.Name</strong></p>
+            }
+        }
+    </div>
+</div>
+
+<div class="products-page">
+    <div class="container">
+        <div class="products-layout">
+            <!-- Sidebar Filters -->
+            <aside class="products-sidebar">
+                <div class="filter-section">
+                    <h3>Categories</h3>
+                    <ul class="category-filter-list">
+                        <li>
+                            <a asp-controller="Product" asp-action="Index" 
+                               class="@(Model.SelectedCategoryId == null ? "active" : "")">
+                                All Products
+                            </a>
+                        </li>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <li>
+                                <a asp-controller="Product" asp-action="Category" asp-route-id="@category.CategoryId"
+                                   class="@(Model.SelectedCategoryId == category.CategoryId ? "active" : "")">
+                                    @category.Name
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="filter-section">
+                    <h3>Sort By</h3>
+                    <form asp-controller="Product" asp-action="Index" method="get" id="sortForm">
+                        <input type="hidden" name="categoryId" value="@Model.SelectedCategoryId" />
+                        <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+                        <input type="hidden" name="page" value="1" />
+                        <select name="sortOrder" class="sort-select" onchange="document.getElementById('sortForm').submit()">
+                            <option value="newest" selected="@(Model.SortOrder == "newest" || string.IsNullOrEmpty(Model.SortOrder))">Newest First</option>
+                            <option value="price_asc" selected="@(Model.SortOrder == "price_asc")">Price: Low to High</option>
+                            <option value="price_desc" selected="@(Model.SortOrder == "price_desc")">Price: High to Low</option>
+                            <option value="name_asc" selected="@(Model.SortOrder == "name_asc")">Name: A to Z</option>
+                            <option value="name_desc" selected="@(Model.SortOrder == "name_desc")">Name: Z to A</option>
+                        </select>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- Products Grid -->
+            <div class="products-main">
+                <div class="products-header">
+                    <p class="products-count">Showing @Model.Products.Count() of @Model.TotalProducts products</p>
+                </div>
+
+                @if (Model.Products.Any())
+                {
+                    <div class="products-grid">
+                        @foreach (var product in Model.Products)
+                        {
+                            <div class="product-card">
+                                <div class="product-image">
+                                    @if (product.DiscountPercentage > 0)
+                                    {
+                                        <div class="product-badge">-@product.DiscountPercentage%</div>
+                                    }
+                                    @if (!product.IsInStock)
+                                    {
+                                        <div class="product-badge out-of-stock">Out of Stock</div>
+                                    }
+                                    <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/placeholder.jpg" : product.ImageUrl)" alt="@product.Name" />
+                                </div>
+                                <div class="product-info">
+                                    <h3 class="product-name">@product.Name</h3>
+                                    <p class="product-category">@product.Category.Name</p>
+                                    <p class="product-description">@(product.Description.Length > 100 ? product.Description.Substring(0, 100) + "..." : product.Description)</p>
+                                    <div class="product-price-section">
+                                        @if (product.DiscountPercentage > 0)
+                                        {
+                                            <span class="product-price-old">$@product.Price.ToString("F2")</span>
+                                            <span class="product-price">$@product.FinalPrice.ToString("F2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="product-price">$@product.Price.ToString("F2")</span>
+                                        }
+                                    </div>
+                                    <div class="product-stock">
+                                        @if (product.IsInStock)
+                                        {
+                                            <span class="stock-available">✓ In Stock (@product.StockQuantity available)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="stock-unavailable">✗ Out of Stock</span>
+                                        }
+                                    </div>
+                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@product.ProductId" class="btn btn-secondary btn-full">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Pagination -->
+                    @if (Model.TotalPages > 1)
+                    {
+                        <div class="pagination">
+                            @if (Model.HasPreviousPage)
+                            {
+                                <a asp-controller="Product" asp-action="Index" 
+                                   asp-route-categoryId="@Model.SelectedCategoryId"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-sortOrder="@Model.SortOrder"
+                                   asp-route-page="@(Model.CurrentPage - 1)" 
+                                   class="pagination-link">
+                                    ← Previous
+                                </a>
+                            }
+
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <a asp-controller="Product" asp-action="Index"
+                                   asp-route-categoryId="@Model.SelectedCategoryId"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-sortOrder="@Model.SortOrder"
+                                   asp-route-page="@i"
+                                   class="pagination-link @(i == Model.CurrentPage ? "active" : "")">
+                                    @i
+                                </a>
+                            }
+
+                            @if (Model.HasNextPage)
+                            {
+                                <a asp-controller="Product" asp-action="Index"
+                                   asp-route-categoryId="@Model.SelectedCategoryId"
+                                   asp-route-searchTerm="@Model.SearchTerm"
+                                   asp-route-sortOrder="@Model.SortOrder"
+                                   asp-route-page="@(Model.CurrentPage + 1)"
+                                   class="pagination-link">
+                                    Next →
+                                </a>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-products">
+                        <p>No products found matching your criteria.</p>
+                        <a asp-controller="Product" asp-action="Index" class="btn btn-primary">View All Products</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,107 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Home";
+}
+
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to TechMart</h1>
+            <p class="hero-subtitle">Discover Quality Products at Unbeatable Prices</p>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-large">
+                Browse Products
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="categories-section">
+    <div class="container">
+        <h2 class="section-title">Shop by Category</h2>
+        <div class="categories-grid">
+            @foreach (var category in Model.Categories)
+            {
+                <a asp-controller="Product" asp-action="Category" asp-route-id="@category.CategoryId" class="category-card">
+                    <div class="category-icon">
+                        @switch(category.Name)
+                        {
+                            case "Electronics": <span>💻</span> break;
+                            case "Clothing": <span>👕</span> break;
+                            case "Books": <span>📚</span> break;
+                            case "Home & Garden": <span>🏡</span> break;
+                            case "Sports & Outdoors": <span>⚽</span> break;
+                            default: <span>🛍️</span> break;
+                        }
+                    </div>
+                    <h3>@category.Name</h3>
+                    <p>@category.Description</p>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="featured-section">
+    <div class="container">
+        <h2 class="section-title">Featured Products</h2>
+        <div class="products-grid">
+            @foreach (var product in Model.FeaturedProducts)
+            {
+                <div class="product-card">
+                    <div class="product-image">
+                        @if (product.DiscountPercentage > 0)
+                        {
+                            <div class="product-badge">-@product.DiscountPercentage%</div>
+                        }
+                        <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/placeholder.jpg" : product.ImageUrl)" alt="@product.Name" />
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">@product.Name</h3>
+                        <p class="product-category">@product.Category.Name</p>
+                        <div class="product-price-section">
+                            @if (product.DiscountPercentage > 0)
+                            {
+                                <span class="product-price-old">$@product.Price.ToString("F2")</span>
+                                <span class="product-price">$@product.FinalPrice.ToString("F2")</span>
+                            }
+                            else
+                            {
+                                <span class="product-price">$@product.Price.ToString("F2")</span>
+                            }
+                        </div>
+                        <a asp-controller="Product" asp-action="Details" asp-route-id="@product.ProductId" class="btn btn-secondary btn-full">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">🚚</div>
+                <h3>Free Shipping</h3>
+                <p>On orders over $50</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🔒</div>
+                <h3>Secure Payment</h3>
+                <p>100% secure transactions</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">↩️</div>
+                <h3>Easy Returns</h3>
+                <p>30-day return policy</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">💬</div>
+                <h3>24/7 Support</h3>
+                <p>Dedicated customer service</p>
+            </div>
+        </div>
+    </div>
+</section>

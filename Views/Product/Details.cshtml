@@ -1,0 +1,146 @@
+@model ProductDetailViewModel
+@{
+    ViewData["Title"] = Model.Product.Name;
+}
+
+<div class="product-details-page">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a asp-controller="Home" asp-action="Index">Home</a>
+            <span>/</span>
+            <a asp-controller="Product" asp-action="Index">Products</a>
+            <span>/</span>
+            <a asp-controller="Product" asp-action="Category" asp-route-id="@Model.Product.CategoryId">@Model.Product.Category.Name</a>
+            <span>/</span>
+            <span>@Model.Product.Name</span>
+        </nav>
+
+        <!-- Product Details Section -->
+        <div class="product-details-layout">
+            <div class="product-images">
+                <div class="main-image">
+                    @if (Model.Product.DiscountPercentage > 0)
+                    {
+                        <div class="product-badge-large">-@Model.Product.DiscountPercentage%</div>
+                    }
+                    <img src="@(string.IsNullOrEmpty(Model.Product.ImageUrl) ? "/images/placeholder-large.jpg" : Model.Product.ImageUrl)" 
+                         alt="@Model.Product.Name" />
+                </div>
+            </div>
+
+            <div class="product-details-info">
+                <h1 class="product-title">@Model.Product.Name</h1>
+                
+                <div class="product-meta">
+                    <span class="product-sku">SKU: @Model.Product.SKU</span>
+                    <span class="product-category-badge">
+                        <a asp-controller="Product" asp-action="Category" asp-route-id="@Model.Product.CategoryId">
+                            @Model.Product.Category.Name
+                        </a>
+                    </span>
+                </div>
+
+                <div class="product-price-details">
+                    @if (Model.Product.DiscountPercentage > 0)
+                    {
+                        <div class="price-with-discount">
+                            <span class="original-price">$@Model.Product.Price.ToString("F2")</span>
+                            <span class="discounted-price">$@Model.Product.FinalPrice.ToString("F2")</span>
+                            <span class="savings">You save: $@((Model.Product.Price - Model.Product.FinalPrice).ToString("F2")) (@Model.Product.DiscountPercentage%)</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="current-price">$@Model.Product.Price.ToString("F2")</span>
+                    }
+                </div>
+
+                <div class="product-stock-info">
+                    @if (Model.Product.IsInStock)
+                    {
+                        <div class="stock-status in-stock">
+                            <span class="status-icon">✓</span>
+                            <span>In Stock</span>
+                        </div>
+                        <p class="stock-quantity">@Model.Product.StockQuantity units available</p>
+                    }
+                    else
+                    {
+                        <div class="stock-status out-of-stock">
+                            <span class="status-icon">✗</span>
+                            <span>Out of Stock</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="product-description">
+                    <h3>Product Description</h3>
+                    <p>@Model.Product.Description</p>
+                </div>
+
+                <div class="product-actions">
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-secondary">
+                        ← Continue Shopping
+                    </a>
+                    <button class="btn btn-primary" disabled>
+                        Shopping Cart Coming Soon
+                    </button>
+                </div>
+
+                <div class="product-additional-info">
+                    <div class="info-item">
+                        <strong>🚚 Shipping:</strong> Free shipping on orders over $50
+                    </div>
+                    <div class="info-item">
+                        <strong>↩️ Returns:</strong> 30-day return policy
+                    </div>
+                    <div class="info-item">
+                        <strong>🔒 Security:</strong> Secure payment processing
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products Section -->
+        @if (Model.RelatedProducts.Any())
+        {
+            <section class="related-products-section">
+                <h2 class="section-title">You May Also Like</h2>
+                <div class="products-grid">
+                    @foreach (var relatedProduct in Model.RelatedProducts)
+                    {
+                        <div class="product-card">
+                            <div class="product-image">
+                                @if (relatedProduct.DiscountPercentage > 0)
+                                {
+                                    <div class="product-badge">-@relatedProduct.DiscountPercentage%</div>
+                                }
+                                <img src="@(string.IsNullOrEmpty(relatedProduct.ImageUrl) ? "/images/placeholder.jpg" : relatedProduct.ImageUrl)" 
+                                     alt="@relatedProduct.Name" />
+                            </div>
+                            <div class="product-info">
+                                <h3 class="product-name">@relatedProduct.Name</h3>
+                                <p class="product-category">@relatedProduct.Category.Name</p>
+                                <div class="product-price-section">
+                                    @if (relatedProduct.DiscountPercentage > 0)
+                                    {
+                                        <span class="product-price-old">$@relatedProduct.Price.ToString("F2")</span>
+                                        <span class="product-price">$@relatedProduct.FinalPrice.ToString("F2")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="product-price">$@relatedProduct.Price.ToString("F2")</span>
+                                    }
+                                </div>
+                                <a asp-controller="Product" asp-action="Details" asp-route-id="@relatedProduct.ProductId" class="btn btn-secondary btn-full">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+</div>

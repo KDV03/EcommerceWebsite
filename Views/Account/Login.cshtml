@@ -1,0 +1,69 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-container auth-container-small">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to your TechMart account</p>
+                </div>
+
+                <form asp-action="Login" asp-controller="Account" method="post" class="auth-form">
+                    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    <div class="form-group">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" class="form-input" placeholder="your.email@example.com" autofocus />
+                        <span asp-validation-for="Email" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Password"></label>
+                        <input asp-for="Password" class="form-input" placeholder="Enter your password" />
+                        <span asp-validation-for="Password" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-group-row">
+                        <label class="checkbox-label">
+                            <input asp-for="RememberMe" type="checkbox" class="form-checkbox" />
+                            <span>Remember me</span>
+                        </label>
+                        <a asp-action="ForgotPassword" class="link-primary">Forgot password?</a>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-large btn-full">
+                            Sign In
+                        </button>
+                    </div>
+
+                    <div class="auth-footer">
+                        <p>Don't have an account? <a asp-action="Register" asp-controller="Account">Register here</a></p>
+                    </div>
+                </form>
+
+                <div class="auth-divider">
+                    <span>OR</span>
+                </div>
+
+                <div class="social-auth">
+                    <button class="btn-social btn-google" disabled>
+                        <span>🔍</span> Continue with Google (Coming Soon)
+                    </button>
+                    <button class="btn-social btn-facebook" disabled>
+                        <span>📘</span> Continue with Facebook (Coming Soon)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
