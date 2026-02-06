@@ -1,0 +1,120 @@
+@model IEnumerable<UserDocument>
+@{
+    ViewData["Title"] = "Pending Verifications";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>Pending Verifications</h1>
+        <p>Review and approve user documents</p>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    @if (!Model.Any())
+    {
+        <div class="no-products">
+            <p>No pending verifications</p>
+            <a asp-action="Dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var document in Model)
+        {
+            <div class="auth-card" style="margin-bottom: 2rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">@document.User.FullName</h3>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Email:</strong> @document.User.Email<br/>
+                            <strong>Phone:</strong> @document.User.PhoneNumber<br/>
+                            <strong>Document Type:</strong> @document.DocumentType<br/>
+                            <strong>Uploaded:</strong> @document.UploadedDate.ToString("MMM dd, yyyy")
+                        </div>
+
+                        <div style="margin-bottom: 2rem;">
+                            <img src="@document.FileUrl" alt="Document" 
+                                 style="max-width: 100%; border-radius: 0.5rem; border: 2px solid var(--gray-200);" />
+                        </div>
+
+                        <form asp-action="ApproveDocument" method="post">
+                            <input type="hidden" name="documentId" value="@document.DocumentId" />
+                            
+                            <div class="form-group">
+                                <label>Decision</label>
+                                <select name="decision" class="form-input" required>
+                                    <option value="">-- Select Decision --</option>
+                                    <option value="@DocumentStatus.Approved">Approve</option>
+                                    <option value="@DocumentStatus.Rejected">Reject</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <textarea name="notes" class="form-input" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Rejection Reason (if rejecting)</label>
+                                <textarea name="rejectionReason" class="form-input" rows="2"></textarea>
+                            </div>
+
+                            <div style="display: flex; gap: 1rem;">
+                                <button type="submit" class="btn btn-primary btn-full">Submit Decision</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div>
+                        <h4 style="margin-bottom: 1rem;">User Information</h4>
+                        
+                        <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 0.75rem;">
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Registered:</strong><br/>
+                                @document.User.CreatedDate.ToString("MMM dd, yyyy")
+                            </div>
+
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Account Type:</strong><br/>
+                                @(document.User.IsSeller ? "Seller" : "Buyer")
+                            </div>
+
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Email Verified:</strong><br/>
+                                @(document.User.IsEmailVerified ? "✅ Yes" : "❌ No")
+                            </div>
+
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Address:</strong><br/>
+                                @document.User.AddressLine1<br/>
+                                @document.User.City, @document.User.Province
+                            </div>
+
+                            @if (document.User.IsSeller)
+                            {
+                                <div style="margin-bottom: 1rem;">
+                                    <strong>Seller Stats:</strong><br/>
+                                    Total Sales: @document.User.TotalSales<br/>
+                                    Rating: @document.User.SellerRating.ToString("F1") ⭐
+                                </div>
+                            }
+                        </div>
+
+                        <div style="background: var(--accent-soft); padding: 1.5rem; border-radius: 0.75rem; margin-top: 1.5rem;">
+                            <strong>📋 Verification Checklist:</strong>
+                            <ul style="margin: 0.5rem 0 0 1.5rem;">
+                                <li>Document is clear and readable</li>
+                                <li>Name matches registration</li>
+                                <li>Document is valid and not expired</li>
+                                <li>Photo/scan quality is acceptable</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

@@ -1,0 +1,113 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>Checkout</h1>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="max-width: 900px; margin: 0 auto;">
+        <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem;">
+            
+            <div class="auth-card">
+                <h2 style="margin-bottom: 1.5rem;">Shipping Details</h2>
+                
+                <form asp-action="ProcessPayment" method="post" class="auth-form">
+                    <input type="hidden" asp-for="ListingId" />
+                    <input type="hidden" asp-for="Quantity" />
+                    <input type="hidden" asp-for="ShippingCost" />
+                    <input type="hidden" asp-for="TotalAmount" />
+
+                    <div class="form-group">
+                        <label asp-for="ShippingAddress"></label>
+                        <input asp-for="ShippingAddress" class="form-input" />
+                        <span asp-validation-for="ShippingAddress" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="ShippingCity"></label>
+                            <input asp-for="ShippingCity" class="form-input" />
+                            <span asp-validation-for="ShippingCity" class="validation-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ShippingProvince"></label>
+                            <input asp-for="ShippingProvince" class="form-input" />
+                            <span asp-validation-for="ShippingProvince" class="validation-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ShippingPostalCode"></label>
+                        <input asp-for="ShippingPostalCode" class="form-input" />
+                        <span asp-validation-for="ShippingPostalCode" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="BuyerPhone"></label>
+                        <input asp-for="BuyerPhone" class="form-input" />
+                        <span asp-validation-for="BuyerPhone" class="validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="BuyerNotes"></label>
+                        <textarea asp-for="BuyerNotes" class="form-input" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-large btn-full">
+                            Continue to Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div>
+                <div class="auth-card">
+                    <h3 style="margin-bottom: 1rem;">Order Summary</h3>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <img src="@Model.Listing.PrimaryImageUrl" alt="@Model.Listing.Title" 
+                             style="width: 100%; border-radius: 0.5rem;" />
+                    </div>
+
+                    <h4>@Model.Listing.Title</h4>
+                    <p style="color: var(--gray-600); font-size: 0.875rem;">Qty: @Model.Quantity</p>
+
+                    <div style="margin: 1.5rem 0; padding-top: 1.5rem; border-top: 2px solid var(--gray-200);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Subtotal:</span>
+                            <strong>R @Model.SubTotal.ToString("F2")</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Shipping:</span>
+                            <strong>R @Model.ShippingCost.ToString("F2")</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>VAT (15%):</span>
+                            <strong>R @Model.TaxAmount.ToString("F2")</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--gray-200); font-size: 1.25rem;">
+                            <strong>Total:</strong>
+                            <strong style="color: var(--accent);">R @Model.TotalAmount.ToString("F2")</strong>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--gray-50); padding: 1rem; border-radius: 0.5rem; font-size: 0.875rem;">
+                        <p style="margin: 0;"><strong>🔒 Buyer Protection</strong></p>
+                        <p style="margin: 0.5rem 0 0;">Funds held securely until delivery confirmed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

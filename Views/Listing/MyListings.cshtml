@@ -1,0 +1,56 @@
+@model IEnumerable<Listing>
+@{
+    ViewData["Title"] = "My Listings";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>My Listings</h1>
+        <a asp-action="Create" class="btn btn-primary">+ Create New Listing</a>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    @if (!Model.Any())
+    {
+        <div class="no-products">
+            <p>You haven't created any listings yet.</p>
+            <a asp-action="Create" class="btn btn-primary">Create Your First Listing</a>
+        </div>
+    }
+    else
+    {
+        <div class="products-grid">
+            @foreach (var listing in Model)
+            {
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-badge">@listing.Status</div>
+                        <img src="@listing.PrimaryImageUrl" alt="@listing.Title" />
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">@listing.Title</h3>
+                        <p class="product-category">@listing.Category?.Name</p>
+                        <div class="product-price-section">
+                            <span class="product-price">R @listing.Price.ToString("F2")</span>
+                        </div>
+                        <p style="font-size: 0.875rem; color: var(--gray-600);">
+                            Stock: @listing.Quantity | Views: @listing.ViewCount
+                        </p>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <a asp-action="Edit" asp-route-id="@listing.ListingId" class="btn btn-secondary btn-small">Edit</a>
+                            <a asp-action="EditPhotos" asp-route-id="@listing.ListingId" class="btn btn-secondary btn-small">Photos</a>
+                            @if (listing.Status == ListingStatus.Draft)
+                            {
+                                <form asp-action="Publish" method="post" style="display: inline;">
+                                    <input type="hidden" name="id" value="@listing.ListingId" />
+                                    <button type="submit" class="btn btn-primary btn-small">Publish</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

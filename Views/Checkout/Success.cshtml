@@ -1,0 +1,51 @@
+@model Order
+@{
+    ViewData["Title"] = "Order Confirmed";
+}
+
+<div class="container" style="padding: 3rem 0; text-align: center;">
+    <div class="auth-card" style="max-width: 600px; margin: 0 auto;">
+        
+        <div style="font-size: 5rem; margin-bottom: 1rem;">✅</div>
+        
+        <h1 style="color: var(--success); margin-bottom: 1rem;">Order Confirmed!</h1>
+        
+        <p style="font-size: 1.25rem; color: var(--gray-600); margin-bottom: 2rem;">
+            Your order has been successfully placed
+        </p>
+
+        <div style="background: var(--gray-50); padding: 2rem; border-radius: 1rem; margin-bottom: 2rem; text-align: left;">
+            <h3 style="margin-bottom: 1rem;">Order Details</h3>
+            
+            <div style="margin-bottom: 0.75rem;">
+                <strong>Order Number:</strong> @Model.OrderNumber
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <strong>Total Amount:</strong> R @Model.TotalAmount.ToString("F2")
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <strong>Payment Status:</strong> 
+                <span style="color: var(--success); font-weight: 700;">@Model.PaymentStatus</span>
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <strong>Delivery Address:</strong><br/>
+                @Model.ShippingAddress<br/>
+                @Model.ShippingCity, @Model.ShippingProvince @Model.ShippingPostalCode
+            </div>
+        </div>
+
+        <div style="background: var(--accent-soft); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+            <p style="margin: 0; font-weight: 600;">
+                📧 Confirmation email sent to your inbox<br/>
+                📦 Seller will ship your order soon
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a asp-controller="Order" asp-action="Details" asp-route-id="@Model.OrderId" 
+               class="btn btn-primary">View Order</a>
+            <a asp-controller="Home" asp-action="Index" 
+               class="btn btn-secondary">Continue Shopping</a>
+        </div>
+    </div>
+</div>

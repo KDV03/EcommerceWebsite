@@ -1,0 +1,123 @@
+@model OrderSummaryViewModel
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>Order #@Model.Order.OrderNumber</h1>
+        <p>Status: @Model.Order.Status</p>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem;">
+        
+        <div>
+            <div class="auth-card" style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1.5rem;">Order Timeline</h3>
+                
+                <div style="position: relative; padding-left: 2rem;">
+                    @foreach (var history in Model.StatusHistory.OrderBy(h => h.UpdatedDate))
+                    {
+                        <div style="position: relative; margin-bottom: 2rem;">
+                            <div style="position: absolute; left: -2rem; width: 40px; height: 40px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                ✓
+                            </div>
+                            <div>
+                                <strong style="display: block; margin-bottom: 0.25rem;">@history.Status</strong>
+                                <small style="color: var(--gray-600);">
+                                    @history.UpdatedDate.ToString("MMM dd, yyyy HH:mm")
+                                </small>
+                                @if (!string.IsNullOrEmpty(history.Notes))
+                                {
+                                    <p style="margin: 0.5rem 0 0;">@history.Notes</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="auth-card">
+                <h3 style="margin-bottom: 1.5rem;">Order Items</h3>
+                
+                @foreach (var item in Model.Order.Items)
+                {
+                    <div style="display: flex; gap: 1rem; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--gray-200);">
+                        <img src="@item.ProductImageUrl" alt="@item.ProductName" 
+                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem;" />
+                        <div style="flex: 1;">
+                            <h4 style="margin-bottom: 0.5rem;">@item.ProductName</h4>
+                            <p style="color: var(--gray-600); margin: 0;">Qty: @item.Quantity × R @item.UnitPrice.ToString("F2")</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong>R @item.TotalPrice.ToString("F2")</strong>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div>
+            <div class="auth-card" style="margin-bottom: 1rem;">
+                <h3 style="margin-bottom: 1rem;">Order Summary</h3>
+                
+                <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                    <span>Subtotal:</span>
+                    <span>R @Model.Order.SubTotal.ToString("F2")</span>
+                </div>
+                <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                    <span>Shipping:</span>
+                    <span>R @Model.Order.ShippingCost.ToString("F2")</span>
+                </div>
+                <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+                    <span>Tax:</span>
+                    <span>R @Model.Order.TaxAmount.ToString("F2")</span>
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--gray-200); display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800;">
+                    <span>Total:</span>
+                    <span style="color: var(--accent);">R @Model.Order.TotalAmount.ToString("F2")</span>
+                </div>
+            </div>
+
+            <div class="auth-card" style="margin-bottom: 1rem;">
+                <h4 style="margin-bottom: 0.75rem;">Delivery Address</h4>
+                <p style="margin: 0; line-height: 1.6;">
+                    @Model.Order.ShippingAddress<br/>
+                    @Model.Order.ShippingCity<br/>
+                    @Model.Order.ShippingProvince @Model.Order.ShippingPostalCode
+                </p>
+            </div>
+
+            @if (Model.UserRole == "seller" && Model.Order.Status == OrderStatus.Confirmed)
+            {
+                <div class="auth-card">
+                    <h4 style="margin-bottom: 1rem;">Seller Actions</h4>
+                    <form asp-action="MarkAsShipped" method="post">
+                        <input type="hidden" name="orderId" value="@Model.Order.OrderId" />
+                        <div class="form-group">
+                            <label>Tracking Number</label>
+                            <input name="trackingNumber" class="form-input" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Courier Service</label>
+                            <input name="courierService" class="form-input" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">Mark as Shipped</button>
+                    </form>
+                </div>
+            }
+
+            @if (Model.UserRole == "buyer" && Model.Order.Status == OrderStatus.Shipped)
+            {
+                <div class="auth-card">
+                    <form asp-action="ConfirmDelivery" method="post">
+                        <input type="hidden" name="orderId" value="@Model.Order.OrderId" />
+                        <button type="submit" class="btn btn-primary btn-full">Confirm Delivery</button>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+</div>

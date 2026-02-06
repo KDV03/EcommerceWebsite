@@ -1,0 +1,157 @@
+@model IEnumerable<Dispute>
+@{
+    ViewData["Title"] = "Dispute Management";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>Dispute Management</h1>
+        <p>Review and resolve buyer-seller disputes</p>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    
+    @if (!Model.Any())
+    {
+        <div class="no-products">
+            <p>No open disputes</p>
+            <a asp-action="Dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var dispute in Model)
+        {
+            <div class="auth-card" style="margin-bottom: 2rem;">
+                <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem;">
+                    
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">
+                            Dispute #@dispute.DisputeId
+                            <span style="background: var(--warning); color: white; padding: 0.5rem 1rem; border-radius: 1rem; font-size: 0.875rem; margin-left: 1rem;">
+                                @dispute.Status
+                            </span>
+                        </h3>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <strong>Order:</strong> <a asp-controller="Order" asp-action="Details" asp-route-id="@dispute.Order.OrderId">#@dispute.Order.OrderNumber</a><br/>
+                            <strong>Initiated By:</strong> @dispute.Initiator.FullName<br/>
+                            <strong>Created:</strong> @dispute.CreatedDate.ToString("MMM dd, yyyy HH:mm")<br/>
+                            <strong>Reason:</strong> @dispute.Reason
+                        </div>
+
+                        <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
+                            <h4 style="margin-bottom: 0.75rem;">Description</h4>
+                            <p style="margin: 0; white-space: pre-wrap;">@dispute.Description</p>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(dispute.EvidenceUrl))
+                        {
+                            <div style="margin-bottom: 1.5rem;">
+                                <h4 style="margin-bottom: 0.75rem;">Evidence</h4>
+                                <img src="@dispute.EvidenceUrl" alt="Evidence" 
+                                     style="max-width: 100%; border-radius: 0.5rem; border: 2px solid var(--gray-200);" />
+                            </div>
+                        }
+
+                        @if (dispute.Status == DisputeStatus.Open || dispute.Status == DisputeStatus.UnderReview)
+                        {
+                            <form asp-action="ResolveDispute" method="post">
+                                <input type="hidden" name="disputeId" value="@dispute.DisputeId" />
+
+                                <div class="form-group">
+                                    <label>Resolution Outcome</label>
+                                    <select name="outcome" class="form-input" required>
+                                        <option value="">-- Select Outcome --</option>
+                                        <option value="@DisputeOutcome.BuyerFavorable">Buyer Favorable (Full Refund)</option>
+                                        <option value="@DisputeOutcome.SellerFavorable">Seller Favorable (Release Funds)</option>
+                                        <option value="@DisputeOutcome.PartialRefund">Partial Refund</option>
+                                        <option value="@DisputeOutcome.NoAction">No Action Required</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Refund Amount (if partial refund)</label>
+                                    <input name="refundAmount" type="number" step="0.01" class="form-input" 
+                                           placeholder="0.00" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Resolution Notes (sent to both parties)</label>
+                                    <textarea name="resolution" class="form-input" rows="4" required></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Admin Notes (internal only)</label>
+                                    <textarea name="adminNotes" class="form-input" rows="2"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-full">
+                                    Resolve Dispute
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <div style="background: var(--success); color: white; padding: 1.5rem; border-radius: 0.75rem;">
+                                <h4 style="margin-bottom: 0.75rem;">✅ Resolved</h4>
+                                <strong>Outcome:</strong> @dispute.Outcome<br/>
+                                <strong>Resolution:</strong> @dispute.Resolution<br/>
+                                <strong>Resolved:</strong> @dispute.ResolvedDate?.ToString("MMM dd, yyyy")
+                            </div>
+                        }
+                    </div>
+
+                    <div>
+                        <div class="auth-card" style="background: var(--gray-50);">
+                            <h4 style="margin-bottom: 1rem;">Order Details</h4>
+                            
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>Amount:</strong><br/>
+                                R @dispute.Order.TotalAmount.ToString("F2")
+                            </div>
+
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>Buyer:</strong><br/>
+                                @dispute.Order.Buyer.FullName<br/>
+                                @dispute.Order.Buyer.Email
+                            </div>
+
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>Seller:</strong><br/>
+                                @dispute.Order.Seller.FullName<br/>
+                                @dispute.Order.Seller.Email
+                            </div>
+
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>Order Status:</strong><br/>
+                                @dispute.Order.Status
+                            </div>
+
+                            <div style="margin-bottom: 0.75rem;">
+                                <strong>Funds Status:</strong><br/>
+                                @(dispute.Order.FundsHeld ? "🔒 Held in Escrow" : "✅ Released")
+                            </div>
+
+                            <a asp-controller="Order" asp-action="Details" asp-route-id="@dispute.Order.OrderId" 
+                               class="btn btn-secondary btn-full" style="margin-top: 1rem;">
+                                View Full Order
+                            </a>
+                        </div>
+
+                        <div style="background: var(--accent-soft); padding: 1.5rem; border-radius: 0.75rem; margin-top: 1rem;">
+                            <strong>💡 Resolution Guidelines:</strong>
+                            <ul style="margin: 0.5rem 0 0 1.5rem; font-size: 0.875rem;">
+                                <li>Review all evidence carefully</li>
+                                <li>Contact parties if needed</li>
+                                <li>Document reasoning clearly</li>
+                                <li>Be fair and impartial</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
