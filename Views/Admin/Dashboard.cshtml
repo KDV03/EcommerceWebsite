@@ -1,0 +1,87 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        <p>Platform overview and management</p>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="auth-card" style="text-align: center;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👥</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--primary);">@Model.TotalUsers</div>
+            <div style="color: var(--gray-600);">Total Users</div>
+        </div>
+
+        <div class="auth-card" style="text-align: center;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">✅</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--success);">@Model.VerifiedUsers</div>
+            <div style="color: var(--gray-600);">Verified Users</div>
+        </div>
+
+        <div class="auth-card" style="text-align: center;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📦</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">@Model.ActiveListings</div>
+            <div style="color: var(--gray-600);">Active Listings</div>
+        </div>
+
+        <div class="auth-card" style="text-align: center;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚠️</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--warning);">@Model.OpenDisputes</div>
+            <div style="color: var(--gray-600);">Open Disputes</div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+        <a asp-action="PendingVerifications" class="btn btn-secondary btn-large" style="text-decoration: none;">
+            📄 Pending Verifications (@Model.PendingVerifications)
+        </a>
+        <a asp-action="EscrowManagement" class="btn btn-secondary btn-large" style="text-decoration: none;">
+            💰 Escrow Funds (R @Model.EscrowFunds.ToString("F2"))
+        </a>
+        <a asp-action="Disputes" class="btn btn-secondary btn-large" style="text-decoration: none;">
+            ⚖️ Manage Disputes (@Model.OpenDisputes)
+        </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="auth-card">
+            <h3 style="margin-bottom: 1.5rem;">Recent Orders</h3>
+            @foreach (var order in Model.RecentOrders.Take(5))
+            {
+                <div style="padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--gray-200);">
+                    <strong>Order #@order.OrderNumber</strong><br/>
+                    <small style="color: var(--gray-600);">
+                        R @order.TotalAmount.ToString("F2") - @order.Status
+                    </small>
+                </div>
+            }
+        </div>
+
+        <div class="auth-card">
+            <h3 style="margin-bottom: 1.5rem;">Recent Disputes</h3>
+            @if (Model.RecentDisputes.Any())
+            {
+                @foreach (var dispute in Model.RecentDisputes.Take(5))
+                {
+                    <div style="padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--gray-200);">
+                        <strong>@dispute.Reason</strong><br/>
+                        <small style="color: var(--gray-600);">
+                            Order #@dispute.Order.OrderNumber - @dispute.Status
+                        </small>
+                    </div>
+                }
+            }
+            else
+            {
+                <p style="color: var(--gray-600);">No disputes</p>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,74 @@
+@model IEnumerable<Order>
+@{
+    ViewData["Title"] = "My Orders";
+    var userRole = ViewBag.UserRole as string;
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>My Orders</h1>
+        <p>@(userRole == "seller" ? "Orders for your products" : "Your purchases")</p>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    @if (!Model.Any())
+    {
+        <div class="no-products">
+            <p>No orders yet.</p>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-primary">Start Shopping</a>
+        </div>
+    }
+    else
+    {
+        <div style="display: grid; gap: 1.5rem;">
+            @foreach (var order in Model)
+            {
+                <div class="auth-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="margin-bottom: 0.5rem;">Order #@order.OrderNumber</h3>
+                            <p style="color: var(--gray-600); margin: 0;">
+                                @order.CreatedDate.ToString("MMM dd, yyyy")
+                            </p>
+                        </div>
+                        <div>
+                            <span style="background: var(--accent-soft); color: var(--accent); padding: 0.5rem 1rem; border-radius: 1rem; font-weight: 700;">
+                                @order.Status
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items: center;">
+                        <img src="@order.Items.FirstOrDefault()?.ProductImageUrl" alt="Product" 
+                             style="width: 100px; height: 100px; object-fit: cover; border-radius: 0.5rem;" />
+                        
+                        <div>
+                            <h4 style="margin-bottom: 0.5rem;">@order.Items.FirstOrDefault()?.ProductName</h4>
+                            <p style="color: var(--gray-600); margin: 0;">
+                                Quantity: @order.Items.FirstOrDefault()?.Quantity
+                            </p>
+                            @if (userRole == "buyer")
+                            {
+                                <p style="margin: 0.5rem 0 0;">Seller: @order.Seller?.FullName</p>
+                            }
+                            else
+                            {
+                                <p style="margin: 0.5rem 0 0;">Buyer: @order.Buyer?.FullName</p>
+                            }
+                        </div>
+
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
+                                R @order.TotalAmount.ToString("F2")
+                            </div>
+                            <a asp-action="Details" asp-route-id="@order.OrderId" class="btn btn-secondary btn-small">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,109 @@
+@model PaymentViewModel
+@{
+    ViewData["Title"] = "Payment";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>Payment</h1>
+        <p>Order #@Model.Order.OrderNumber</p>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    <div class="auth-card" style="max-width: 600px; margin: 0 auto;">
+        
+        <h2 style="margin-bottom: 1.5rem;">Select Payment Method</h2>
+
+        <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+            @foreach (var method in Model.AvailablePaymentMethods)
+            {
+                <div onclick="selectPayment('@method')" 
+                     style="border: 2px solid var(--gray-200); padding: 1.5rem; border-radius: 0.75rem; cursor: pointer; transition: all 0.3s;"
+                     class="payment-method-option">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <input type="radio" name="paymentMethod" value="@method" />
+                        <div>
+                            <strong style="display: block; margin-bottom: 0.25rem;">@method</strong>
+                            <small style="color: var(--gray-600);">
+                                @switch(method)
+                                {
+                                    case PaymentMethod.CreditCard: <text>Visa, Mastercard</text> break;
+                                    case PaymentMethod.PayFast: <text>South African payment gateway</text> break;
+                                    case PaymentMethod.EFT: <text>Bank transfer</text> break;
+                                    default: <text>Secure payment</text> break;
+                                }
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem;">Order Total</h3>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">
+                R @Model.Order.TotalAmount.ToString("F2")
+            </div>
+        </div>
+
+        <button id="processPaymentBtn" onclick="processPayment()" class="btn btn-primary btn-large btn-full">
+            Complete Payment
+        </button>
+
+        <div id="processingMessage" style="display: none; text-align: center; padding: 2rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+            <p>Processing your payment...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let selectedMethod = null;
+
+function selectPayment(method) {
+    selectedMethod = method;
+    document.querySelectorAll('.payment-method-option').forEach(el => {
+        el.style.borderColor = 'var(--gray-200)';
+    });
+    event.currentTarget.style.borderColor = 'var(--accent)';
+    event.currentTarget.style.background = 'rgba(6, 182, 212, 0.05)';
+}
+
+async function processPayment() {
+    if (!selectedMethod) {
+        alert('Please select a payment method');
+        return;
+    }
+
+    document.getElementById('processPaymentBtn').style.display = 'none';
+    document.getElementById('processingMessage').style.display = 'block';
+
+    try {
+        const response = await fetch('/Checkout/InitiatePayment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                orderId: @Model.Order.OrderId,
+                paymentMethod: selectedMethod
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            window.location.href = '/Checkout/Success/' + result.orderId;
+        } else {
+            alert('Payment failed: ' + result.message);
+            document.getElementById('processPaymentBtn').style.display = 'block';
+            document.getElementById('processingMessage').style.display = 'none';
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+        document.getElementById('processPaymentBtn').style.display = 'block';
+        document.getElementById('processingMessage').style.display = 'none';
+    }
+}
+</script>
+}

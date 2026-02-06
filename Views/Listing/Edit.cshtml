@@ -1,0 +1,95 @@
+@model EditListingViewModel
+@{
+    ViewData["Title"] = "Edit Listing";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>Edit Listing</h1>
+        <p>Update your product details</p>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    <div class="auth-card" style="max-width: 800px; margin: 0 auto;">
+        
+        <form asp-action="Edit" method="post" class="auth-form">
+            <input type="hidden" asp-for="ListingId" />
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Product Information</h3>
+
+            <div class="form-group">
+                <label asp-for="Title"></label>
+                <input asp-for="Title" class="form-input" />
+                <span asp-validation-for="Title" class="validation-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description"></label>
+                <textarea asp-for="Description" class="form-input" rows="6"></textarea>
+                <span asp-validation-for="Description" class="validation-error"></span>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="CategoryId"></label>
+                    <select asp-for="CategoryId" class="form-input">
+                        @foreach (var category in Model.Categories)
+                        {
+                            <option value="@category.CategoryId">@category.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="CategoryId" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Price"></label>
+                    <input asp-for="Price" class="form-input" type="number" step="0.01" />
+                    <span asp-validation-for="Price" class="validation-error"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="Condition"></label>
+                    <select asp-for="Condition" class="form-input">
+                        <option value="New">New</option>
+                        <option value="Used - Like New">Used - Like New</option>
+                        <option value="Used - Good">Used - Good</option>
+                        <option value="Used - Fair">Used - Fair</option>
+                        <option value="Refurbished">Refurbished</option>
+                    </select>
+                    <span asp-validation-for="Condition" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Quantity"></label>
+                    <input asp-for="Quantity" class="form-input" type="number" min="0" />
+                    <span asp-validation-for="Quantity" class="validation-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group-checkbox">
+                <label class="checkbox-label">
+                    <input asp-for="IsNegotiable" type="checkbox" class="form-checkbox" />
+                    <span>Price is Negotiable</span>
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary btn-large btn-full">
+                    Save Changes
+                </button>
+            </div>
+
+            <div class="auth-footer">
+                <p><a asp-action="MyListings">← Back to My Listings</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

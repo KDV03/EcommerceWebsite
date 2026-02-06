@@ -1,0 +1,94 @@
+@model IEnumerable<Order>
+@{
+    ViewData["Title"] = "Escrow Management";
+    var totalHeld = Model.Sum(o => o.TotalAmount);
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1>Escrow Management</h1>
+        <p>Manage held funds and releases</p>
+    </div>
+</div>
+
+<div class="container" style="padding: 2rem 0;">
+    
+    <div class="auth-card" style="margin-bottom: 2rem; text-align: center;">
+        <h3 style="margin-bottom: 0.5rem;">Total Funds Held in Escrow</h3>
+        <div style="font-size: 3rem; font-weight: 800; color: var(--accent);">
+            R @totalHeld.ToString("F2")
+        </div>
+        <p style="color: var(--gray-600); margin-top: 0.5rem;">
+            Across @Model.Count() orders
+        </p>
+    </div>
+
+    <div style="margin-bottom: 2rem;">
+        <form asp-action="ProcessAutoReleases" method="post" style="display: inline;">
+            <button type="submit" class="btn btn-primary">
+                🔄 Process Auto-Releases (7+ days)
+            </button>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="no-products">
+            <p>No funds currently held in escrow</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var order in Model)
+        {
+            <div class="auth-card" style="margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    
+                    <div style="flex: 1;">
+                        <h4 style="margin-bottom: 0.5rem;">Order #@order.OrderNumber</h4>
+                        
+                        <div style="color: var(--gray-600); margin-bottom: 1rem;">
+                            <strong>Buyer:</strong> @order.Buyer.FullName (@order.Buyer.Email)<br/>
+                            <strong>Seller:</strong> @order.Seller.FullName (@order.Seller.Email)<br/>
+                            <strong>Amount:</strong> R @order.TotalAmount.ToString("F2")<br/>
+                            <strong>Status:</strong> @order.Status<br/>
+                            <strong>Paid:</strong> @order.PaidDate?.ToString("MMM dd, yyyy")
+                            @if (order.DeliveredDate.HasValue)
+                            {
+                                <br/><strong>Delivered:</strong> @order.DeliveredDate?.ToString("MMM dd, yyyy")
+                                <br/><strong>Days Since Delivery:</strong> @order.DaysSinceDelivery
+                            }
+                        </div>
+
+                        @if (order.ShouldAutoReleaseFunds)
+                        {
+                            <div style="background: var(--success); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                                ✅ Eligible for auto-release (7+ days since delivery)
+                            </div>
+                        }
+                    </div>
+
+                    <div style="text-align: right;">
+                        <div style="font-size: 1.75rem; font-weight: 800; color: var(--accent); margin-bottom: 1rem;">
+                            R @order.TotalAmount.ToString("F2")
+                        </div>
+
+                        <form asp-action="AdminReleaseFunds" method="post" style="margin-bottom: 0.5rem;">
+                            <input type="hidden" name="orderId" value="@order.OrderId" />
+                            <input type="hidden" name="notes" value="Manual admin release" />
+                            <button type="submit" class="btn btn-primary btn-small"
+                                    onclick="return confirm('Release funds to seller?')">
+                                Release Funds
+                            </button>
+                        </form>
+
+                        <a asp-controller="Order" asp-action="Details" asp-route-id="@order.OrderId" 
+                           class="btn btn-secondary btn-small">
+                            View Order
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

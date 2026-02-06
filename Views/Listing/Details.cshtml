@@ -1,0 +1,63 @@
+@model Listing
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container" style="padding: 2rem 0;">
+    <div class="product-details-layout">
+        <div class="product-images">
+            <div class="main-image">
+                <img src="@Model.PrimaryImageUrl" alt="@Model.Title" />
+            </div>
+        </div>
+
+        <div class="product-details-info">
+            <h1 class="product-title">@Model.Title</h1>
+            
+            <div class="product-price-details">
+                <span class="current-price">R @Model.Price.ToString("F2")</span>
+                @if (Model.IsNegotiable)
+                {
+                    <span class="savings">Negotiable</span>
+                }
+            </div>
+
+            <div class="product-stock-info">
+                @if (Model.IsAvailable)
+                {
+                    <div class="stock-status in-stock">
+                        <span class="status-icon">✓</span>
+                        <span>In Stock</span>
+                    </div>
+                    <p class="stock-quantity">@Model.Quantity units available</p>
+                }
+            </div>
+
+            <div class="product-description">
+                <h3>Description</h3>
+                <p>@Model.Description</p>
+            </div>
+
+            <div class="product-additional-info">
+                <div class="info-item"><strong>Condition:</strong> @Model.Condition</div>
+                <div class="info-item"><strong>Brand:</strong> @Model.Brand</div>
+                <div class="info-item"><strong>Location:</strong> @Model.City, @Model.Province</div>
+                <div class="info-item"><strong>Seller:</strong> @Model.Seller.FullName</div>
+            </div>
+
+            <div class="product-actions">
+                @if (Model.IsAvailable && User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Checkout" asp-action="Listing" asp-route-id="@Model.ListingId" 
+                       class="btn btn-primary btn-large">Buy Now</a>
+                }
+                else if (!User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-large">
+                        Login to Purchase
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
