@@ -4,10 +4,6 @@ using EcommerceWebsite.Models;
 
 namespace EcommerceWebsite.Data
 {
-    /// <summary>
-    /// Database context managing entity relationships and database operations
-    /// Now extends IdentityDbContext for authentication support
-    /// </summary>
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -15,11 +11,8 @@ namespace EcommerceWebsite.Data
         {
         }
 
-        // Existing DbSets
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
-
-        // New marketplace DbSets
         public DbSet<UserDocument> UserDocuments { get; set; }
         public DbSet<Listing> Listings { get; set; }
         public DbSet<ListingImage> ListingImages { get; set; }
@@ -32,16 +25,16 @@ namespace EcommerceWebsite.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder); // Required for Identity
+            base.OnModelCreating(modelBuilder);
 
-            // Configure Product entity
+            // ========== PRODUCT CONFIGURATION ==========
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.HasKey(e => e.ProductId);
-                
+
                 entity.Property(e => e.Price)
                     .HasPrecision(18, 2);
-                
+
                 entity.Property(e => e.DiscountPercentage)
                     .HasPrecision(5, 2);
 
@@ -54,30 +47,53 @@ namespace EcommerceWebsite.Data
                     .IsUnique();
             });
 
-            // Configure Category entity
+            // ========== CATEGORY CONFIGURATION ==========
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.HasKey(e => e.CategoryId);
             });
 
-            // Configure ApplicationUser relationships
+            // ========== APPLICATION USER CONFIGURATION ==========
             modelBuilder.Entity<ApplicationUser>(entity =>
             {
+                // FIX: Configure decimal precision for SellerRating
+                entity.Property(u => u.SellerRating)
+                    .HasPrecision(18, 2);
+
+                // Configure Documents relationship
                 entity.HasMany(u => u.Documents)
                     .WithOne(d => d.User)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                // Configure Listings relationship
                 entity.HasMany(u => u.Listings)
                     .WithOne(l => l.Seller)
                     .HasForeignKey(l => l.SellerId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                // Configure OrdersAsBuyer relationship
+                entity.HasMany(u => u.OrdersAsBuyer)
+                    .WithOne(o => o.Buyer)
+                    .HasForeignKey(o => o.BuyerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Configure OrdersAsSeller relationship
+                entity.HasMany(u => u.OrdersAsSeller)
+                    .WithOne(o => o.Seller)
+                    .HasForeignKey(o => o.SellerId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configure UserDocument
+            // ========== USER DOCUMENT CONFIGURATION ==========
             modelBuilder.Entity<UserDocument>(entity =>
             {
                 entity.HasKey(e => e.DocumentId);
+
+                entity.HasOne(d => d.User)
+                    .WithMany(u => u.Documents)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(d => d.Reviewer)
                     .WithMany()
@@ -85,7 +101,7 @@ namespace EcommerceWebsite.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configure Listing
+            // ========== LISTING CONFIGURATION ==========
             modelBuilder.Entity<Listing>(entity =>
             {
                 entity.HasKey(e => e.ListingId);
@@ -93,10 +109,25 @@ namespace EcommerceWebsite.Data
                 entity.Property(e => e.Price)
                     .HasPrecision(18, 2);
 
+                entity.HasOne(l => l.Seller)
+                    .WithMany(u => u.Listings)
+                    .HasForeignKey(l => l.SellerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(l => l.Category)
+                    .WithMany()
+                    .HasForeignKey(l => l.CategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 entity.HasMany(l => l.Images)
                     .WithOne(i => i.Listing)
                     .HasForeignKey(i => i.ListingId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(l => l.Reviews)
+                    .WithOne(r => r.Listing)
+                    .HasForeignKey(r => r.ListingId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(e => e.SellerId);
                 entity.HasIndex(e => e.CategoryId);
@@ -104,13 +135,18 @@ namespace EcommerceWebsite.Data
                 entity.HasIndex(e => e.CreatedDate);
             });
 
-            // Configure ListingImage
+            // ========== LISTING IMAGE CONFIGURATION ==========
             modelBuilder.Entity<ListingImage>(entity =>
             {
                 entity.HasKey(e => e.ImageId);
+
+                entity.HasOne(i => i.Listing)
+                    .WithMany(l => l.Images)
+                    .HasForeignKey(i => i.ListingId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Configure Order
+            // ========== ORDER CONFIGURATION ==========
             modelBuilder.Entity<Order>(entity =>
             {
                 entity.HasKey(e => e.OrderId);
@@ -141,35 +177,76 @@ namespace EcommerceWebsite.Data
                     .HasForeignKey(p => p.OrderId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                entity.HasMany(o => o.StatusHistory)
+                    .WithOne(h => h.Order)
+                    .HasForeignKey(h => h.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
                 entity.HasIndex(e => e.OrderNumber).IsUnique();
                 entity.HasIndex(e => e.BuyerId);
                 entity.HasIndex(e => e.SellerId);
                 entity.HasIndex(e => e.Status);
             });
 
-            // Configure OrderItem
+            // ========== ORDER ITEM CONFIGURATION ==========
             modelBuilder.Entity<OrderItem>(entity =>
             {
                 entity.HasKey(e => e.OrderItemId);
 
                 entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
                 entity.Property(e => e.TotalPrice).HasPrecision(18, 2);
+
+                entity.HasOne(i => i.Order)
+                    .WithMany(o => o.Items)
+                    .HasForeignKey(i => i.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(i => i.Listing)
+                    .WithMany()
+                    .HasForeignKey(i => i.ListingId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configure Payment
+            // ========== ORDER STATUS HISTORY CONFIGURATION ==========
+            modelBuilder.Entity<OrderStatusHistory>(entity =>
+            {
+                entity.HasKey(e => e.StatusId);
+
+                entity.HasOne(h => h.Order)
+                    .WithMany(o => o.StatusHistory)
+                    .HasForeignKey(h => h.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(h => h.UpdatedByUser)
+                    .WithMany()
+                    .HasForeignKey(h => h.UpdatedBy)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ========== PAYMENT CONFIGURATION ==========
             modelBuilder.Entity<Payment>(entity =>
             {
                 entity.HasKey(e => e.PaymentId);
 
                 entity.Property(e => e.Amount).HasPrecision(18, 2);
 
+                entity.HasOne(p => p.Order)
+                    .WithMany(o => o.Payments)
+                    .HasForeignKey(p => p.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
                 entity.HasIndex(e => e.TransactionId);
             });
 
-            // Configure Review
+            // ========== REVIEW CONFIGURATION ==========
             modelBuilder.Entity<Review>(entity =>
             {
                 entity.HasKey(e => e.ReviewId);
+
+                entity.HasOne(r => r.Order)
+                    .WithMany()
+                    .HasForeignKey(r => r.OrderId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(r => r.Buyer)
                     .WithMany()
@@ -187,7 +264,7 @@ namespace EcommerceWebsite.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configure Dispute
+            // ========== DISPUTE CONFIGURATION ==========
             modelBuilder.Entity<Dispute>(entity =>
             {
                 entity.HasKey(e => e.DisputeId);
@@ -210,13 +287,10 @@ namespace EcommerceWebsite.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Seed initial data
+            // ========== SEED DATA ==========
             SeedData(modelBuilder);
         }
 
-        /// <summary>
-        /// Seeds initial categories and products for demonstration
-        /// </summary>
         private void SeedData(ModelBuilder modelBuilder)
         {
             // Seed Categories
@@ -230,7 +304,6 @@ namespace EcommerceWebsite.Data
 
             // Seed Products
             modelBuilder.Entity<Product>().HasData(
-                // Electronics
                 new Product
                 {
                     ProductId = 1,
@@ -242,7 +315,8 @@ namespace EcommerceWebsite.Data
                     SKU = "ELEC-WH-001",
                     ImageUrl = "/images/products/headphones.jpg",
                     IsActive = true,
-                    DiscountPercentage = 15m
+                    DiscountPercentage = 15m,
+                    CreatedDate = DateTime.UtcNow
                 },
                 new Product
                 {
@@ -254,26 +328,12 @@ namespace EcommerceWebsite.Data
                     StockQuantity = 12,
                     SKU = "ELEC-TV-002",
                     ImageUrl = "/images/products/tv.jpg",
-                    IsActive = true
+                    IsActive = true,
+                    CreatedDate = DateTime.UtcNow
                 },
                 new Product
                 {
                     ProductId = 3,
-                    Name = "Mechanical Gaming Keyboard",
-                    Price = 129.99m,
-                    Description = "RGB backlit mechanical keyboard with programmable keys",
-                    CategoryId = 1,
-                    StockQuantity = 28,
-                    SKU = "ELEC-KB-003",
-                    ImageUrl = "/images/products/keyboard.jpg",
-                    IsActive = true,
-                    DiscountPercentage = 10m
-                },
-                
-                // Clothing
-                new Product
-                {
-                    ProductId = 4,
                     Name = "Premium Cotton T-Shirt",
                     Price = 24.99m,
                     Description = "100% organic cotton, comfortable fit for everyday wear",
@@ -281,113 +341,8 @@ namespace EcommerceWebsite.Data
                     StockQuantity = 150,
                     SKU = "CLO-TS-001",
                     ImageUrl = "/images/products/tshirt.jpg",
-                    IsActive = true
-                },
-                new Product
-                {
-                    ProductId = 5,
-                    Name = "Denim Jacket",
-                    Price = 79.99m,
-                    Description = "Classic denim jacket with modern fit and style",
-                    CategoryId = 2,
-                    StockQuantity = 35,
-                    SKU = "CLO-JK-002",
-                    ImageUrl = "/images/products/jacket.jpg",
                     IsActive = true,
-                    DiscountPercentage = 20m
-                },
-                
-                // Books
-                new Product
-                {
-                    ProductId = 6,
-                    Name = "Clean Code: A Handbook of Agile Software Craftsmanship",
-                    Price = 42.99m,
-                    Description = "Essential guide for writing maintainable and elegant code",
-                    CategoryId = 3,
-                    StockQuantity = 67,
-                    SKU = "BOOK-CC-001",
-                    ImageUrl = "/images/products/cleancode.jpg",
-                    IsActive = true
-                },
-                new Product
-                {
-                    ProductId = 7,
-                    Name = "Design Patterns: Elements of Reusable Object-Oriented Software",
-                    Price = 54.99m,
-                    Description = "The foundational text on software design patterns",
-                    CategoryId = 3,
-                    StockQuantity = 42,
-                    SKU = "BOOK-DP-002",
-                    ImageUrl = "/images/products/designpatterns.jpg",
-                    IsActive = true
-                },
-                
-                // Home & Garden
-                new Product
-                {
-                    ProductId = 8,
-                    Name = "Stainless Steel Cookware Set",
-                    Price = 199.99m,
-                    Description = "Professional-grade 12-piece cookware set",
-                    CategoryId = 4,
-                    StockQuantity = 18,
-                    SKU = "HOME-CW-001",
-                    ImageUrl = "/images/products/cookware.jpg",
-                    IsActive = true,
-                    DiscountPercentage = 25m
-                },
-                new Product
-                {
-                    ProductId = 9,
-                    Name = "Electric Lawn Mower",
-                    Price = 349.99m,
-                    Description = "Cordless electric mower with 45-minute runtime",
-                    CategoryId = 4,
-                    StockQuantity = 8,
-                    SKU = "HOME-LM-002",
-                    ImageUrl = "/images/products/lawnmower.jpg",
-                    IsActive = true
-                },
-                
-                // Sports & Outdoors
-                new Product
-                {
-                    ProductId = 10,
-                    Name = "Professional Yoga Mat",
-                    Price = 39.99m,
-                    Description = "Non-slip, eco-friendly yoga mat with carrying strap",
-                    CategoryId = 5,
-                    StockQuantity = 95,
-                    SKU = "SPORT-YM-001",
-                    ImageUrl = "/images/products/yogamat.jpg",
-                    IsActive = true,
-                    DiscountPercentage = 5m
-                },
-                new Product
-                {
-                    ProductId = 11,
-                    Name = "Camping Tent 4-Person",
-                    Price = 189.99m,
-                    Description = "Waterproof tent with easy setup for family camping",
-                    CategoryId = 5,
-                    StockQuantity = 22,
-                    SKU = "SPORT-TN-002",
-                    ImageUrl = "/images/products/tent.jpg",
-                    IsActive = true
-                },
-                new Product
-                {
-                    ProductId = 12,
-                    Name = "Mountain Bike 27.5\"",
-                    Price = 899.99m,
-                    Description = "Aluminum frame mountain bike with 21-speed gearing",
-                    CategoryId = 5,
-                    StockQuantity = 6,
-                    SKU = "SPORT-BK-003",
-                    ImageUrl = "/images/products/bike.jpg",
-                    IsActive = true,
-                    DiscountPercentage = 12m
+                    CreatedDate = DateTime.UtcNow
                 }
             );
         }
