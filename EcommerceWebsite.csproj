@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <!-- Entity Framework Core packages -->
+    <PackageReference Include="CloudinaryDotNet" Version="1.25.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
