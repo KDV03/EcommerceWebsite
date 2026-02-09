@@ -81,22 +81,18 @@ namespace EcommerceWebsite.Controllers
                     }
 
                     // Generate email confirmation token
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = Url.Action(
-                        "ConfirmEmail",
-                        "Account",
-                        new { userId = user.Id, code = code },
-                        protocol: HttpContext.Request.Scheme);
-
-                    // Send confirmation email
-                    await _emailService.SendEmailConfirmationAsync(model.Email, callbackUrl);
+                    // Auto-confirm email for development
+                    user.EmailConfirmed = true;
+                    user.IsEmailVerified = true;
+                    await _userManager.UpdateAsync(user);
 
                     // Sign in the user
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    _logger.LogInformation("User signed in after registration.");
+                    _logger.LogInformation("User registered and signed in.");
 
-                    return RedirectToAction("ConfirmEmailSent", new { email = model.Email });
+                    TempData["SuccessMessage"] = "Registration successful! Welcome to Valtryx Marketplace.";
+                    return RedirectToAction("Index", "Home"); ;
                 }
 
                 foreach (var error in result.Errors)
